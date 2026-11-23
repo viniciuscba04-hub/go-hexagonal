@@ -28,3 +28,14 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 
 	httpserver.WriteJSON(w, http.StatusCreated, map[string]string{"message": "transfer completed"})
 }
+
+func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	transfers, err := h.service.List(id)
+	if err != nil {
+		httpserver.Fail(w, statusFor(err), err.Error())
+		return
+	}
+	httpserver.WriteJSON(w, http.StatusOK, transfers)
+}

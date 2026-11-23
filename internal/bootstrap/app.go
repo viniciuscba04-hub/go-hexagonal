@@ -14,7 +14,8 @@ func Bootstrap() http.Handler {
 		domain.Account{ID: "a", Balance: 5000},
 		domain.Account{ID: "b", Balance: 1000},
 	)
-	transfer := application.NewTransferService(accounts)
+	transfers := memory.NewTransfers()
+	transfer := application.NewTransferService(accounts, transfers)
 	handler := httpapi.NewHandler(transfer)
 
 	routeHandlers := []RouteRegister{handler}

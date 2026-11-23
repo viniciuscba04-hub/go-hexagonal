@@ -1,13 +1,23 @@
 package application
 
-import "github.com/bendevjunior/hexagonal-architecture-go/internal/modules/transfers/domain/ports"
+import (
+	"github.com/bendevjunior/hexagonal-architecture-go/internal/modules/transfers/domain"
+	"github.com/bendevjunior/hexagonal-architecture-go/internal/modules/transfers/domain/ports"
+)
 
 type TransferService struct {
-	accounts ports.AccountRepository
+	accounts  ports.AccountRepository
+	transfers ports.TransfersRepository
 }
 
-func NewTransferService(accounts ports.AccountRepository) *TransferService {
-	return &TransferService{accounts: accounts}
+func NewTransferService(
+	accounts ports.AccountRepository,
+	transfers ports.TransfersRepository,
+) *TransferService {
+	return &TransferService{
+		accounts:  accounts,
+		transfers: transfers,
+	}
 }
 
 func (s *TransferService) Execute(fromID string, toID string, amount int64) error {
@@ -28,5 +38,25 @@ func (s *TransferService) Execute(fromID string, toID string, amount int64) erro
 
 	to.Deposit(amount)
 
-	return s.accounts.Save(from, to)
+	result := s.accounts.Save(from, to)
+	if result != nil {
+		return domain.ErrAccountNotFound
+	}
+
+	transfer_register := domain.Transfers{
+		FromID: fromID,
+		ToID:   toID,
+		Amount: amount,
+	}
+	s.transfers.SaveTransfers(transfer_register)
+
+	return result
+}
+
+func (s *TransferService) List(id string) ([]domain.Transfers, error) {
+	if _, err := s.accounts.Get(id); err != nil {
+		return nil, err
+	}
+
+	return s.transfers.List(id)
 }
