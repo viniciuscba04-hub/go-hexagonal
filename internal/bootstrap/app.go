@@ -13,6 +13,7 @@ func Bootstrap() http.Handler {
 	accounts := memory.NewAccounts(
 		domain.Account{ID: "a", Balance: 5000},
 		domain.Account{ID: "b", Balance: 1000},
+		domain.Account{ID: "c", Balance: 500},
 	)
 	transfers := memory.NewTransfers()
 	transfer := application.NewTransferService(accounts, transfers)
